@@ -1,0 +1,58 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/humanoid_body.gd" id="1_body"]
+[ext_resource type="Script" path="res://scripts/player_brain.gd" id="2_brain"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_body"]
+albedo_color = Color(0.55, 0.35, 0.2, 1)
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+floor_max_angle = 0.872665
+floor_snap_length = 0.3
+script = ExtResource("1_body")
+
+[node name="Brain" type="Node" parent="."]
+script = ExtResource("2_brain")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_body")
+surface_material_override/0 = SubResource("Mat_body")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="FirstPersonCamera" type="Camera3D" parent="Head"]
+fov = 75.0
+near = 0.05
+far = 1000.0
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.2, 0)
+collision_mask = 1
+spring_length = 4.0
+margin = 0.2
+
+[node name="ThirdPersonCamera" type="Camera3D" parent="Head/SpringArm3D"]
+fov = 70.0
+near = 0.05
+far = 1000.0
+
+[node name="VoxelViewer" type="VoxelViewer" parent="."]
+view_distance = 128
+requires_collisions = true
+requires_visuals = true

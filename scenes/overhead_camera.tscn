@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/overhead_camera.gd" id="1_overhead"]
+
+[node name="OverheadCamera" type="Node3D"]
+script = ExtResource("1_overhead")
+
+[node name="Pitch" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="Pitch"]
+fov = 60.0
+far = 2000.0
+
+[node name="VoxelViewer" type="VoxelViewer" parent="."]
+view_distance = 128
+requires_collisions = true
+requires_visuals = true

@@ -1,0 +1,88 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/overhead_camera.tscn" id="3_overhead"]
+[ext_resource type="Script" path="res://scripts/camera_mode_controller.gd" id="4_cams"]
+[ext_resource type="Shader" path="res://scenes/terrain.gdshader" id="5_shader"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+sky_horizon_color = Color(0.66, 0.72, 0.8, 1)
+ground_horizon_color = Color(0.66, 0.72, 0.8, 1)
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+ambient_light_source = 3
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.66, 0.72, 0.8, 1)
+fog_density = 0.004
+
+[sub_resource type="FastNoiseLite" id="TerrainNoise"]
+noise_type = 1
+seed = 1337
+frequency = 0.004
+fractal_octaves = 5
+
+[sub_resource type="VoxelGeneratorNoise2D" id="TerrainGenerator"]
+channel = 1
+noise = SubResource("TerrainNoise")
+height_start = -20.0
+height_range = 60.0
+
+[sub_resource type="VoxelMesherTransvoxel" id="TerrainMesher"]
+
+[sub_resource type="ShaderMaterial" id="TerrainMaterial"]
+shader = ExtResource("5_shader")
+
+[node name="Main" type="Node3D" node_paths=PackedStringArray("player", "camera_modes", "hud_label")]
+script = ExtResource("1_main")
+player = NodePath("Player")
+camera_modes = NodePath("CameraModes")
+hud_label = NodePath("HUD/ModeLabel")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 50, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 200.0
+
+[node name="VoxelTerrain" type="VoxelTerrain" parent="."]
+generator = SubResource("TerrainGenerator")
+mesher = SubResource("TerrainMesher")
+material_override = SubResource("TerrainMaterial")
+generate_collisions = true
+collision_layer = 1
+collision_mask = 1
+max_view_distance = 128
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 64, 0)
+
+[node name="OverheadCamera" parent="." node_paths=PackedStringArray("follow_target") instance=ExtResource("3_overhead")]
+follow_target = NodePath("../Player")
+
+[node name="CameraModes" type="Node" parent="." node_paths=PackedStringArray("player", "brain", "first_person_camera", "third_person_camera", "overhead", "player_mesh")]
+script = ExtResource("4_cams")
+player = NodePath("../Player")
+brain = NodePath("../Player/Brain")
+first_person_camera = NodePath("../Player/Head/FirstPersonCamera")
+third_person_camera = NodePath("../Player/Head/SpringArm3D/ThirdPersonCamera")
+overhead = NodePath("../OverheadCamera")
+player_mesh = NodePath("../Player/BodyMesh")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="ModeLabel" type="Label" parent="HUD"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 700.0
+offset_bottom = 60.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
